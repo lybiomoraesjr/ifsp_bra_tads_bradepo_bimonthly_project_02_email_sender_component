@@ -27,12 +27,15 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.3",
+    "@types/nodemailer": "^6.4.17",
     "jest": "^30.0.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@lybioit/component-interface-pattern": "^1.0.1"
+    "@lybioit/component-interface-pattern": "^1.0.1",
+    "handlebars": "^4.7.8",
+    "nodemailer": "^7.0.3"
   }
 }
