@@ -1,0 +1,6 @@
+Este é um arquivo de teste para anexo de email.
+Criado em: ${new Date().toLocaleString()}
+
+IFSP - Instituto Federal de São Paulo
+Câmpus Bragança Paulista
+TADS - Tecnologia em Análise e Desenvolvimento de Sistemas 

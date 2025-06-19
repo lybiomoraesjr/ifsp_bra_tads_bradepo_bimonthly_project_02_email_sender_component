@@ -1,23 +1,40 @@
 {
-  "name": "ifsp_bra_tads_bradepo_bimonthly_project_02",
+  "name": "@lybioit/email-sender-component",
   "version": "1.0.0",
-  "description": "",
+  "description": "A TypeScript email sender component using Component Interface Pattern",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "ts-node src/index.ts",
     "start": "node dist/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "email:test": "ts-node src/main.ts",
+    "prepublishOnly": "npm run build",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/lybiomoraesjr/ifsp_bra_tads_bradepo_bimonthly_project_02_email_sender_component.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "email",
+    "component",
+    "typescript",
+    "nodemailer",
+    "handlebars",
+    "smtp",
+    "component-interface-pattern"
+  ],
+  "author": "Lybio Moraes Junior",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/lybiomoraesjr/ifsp_bra_tads_bradepo_bimonthly_project_02_email_sender_component/issues"
@@ -35,7 +52,11 @@
   },
   "dependencies": {
     "@lybioit/component-interface-pattern": "^1.0.1",
+    "dotenv": "^16.5.0",
     "handlebars": "^4.7.8",
     "nodemailer": "^7.0.3"
+  },
+  "peerDependencies": {
+    "@lybioit/component-interface-pattern": "^1.0.1"
   }
 }

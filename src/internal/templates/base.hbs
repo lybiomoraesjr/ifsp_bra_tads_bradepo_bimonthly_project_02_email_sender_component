@@ -1,0 +1,27 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>{{subject}}</title>
+    <style>
+      body { font-family: Arial, sans-serif; background-color: #f7f7f7; padding:
+      2rem; } .container { background-color: white; border-radius: 8px; padding:
+      1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); } .footer { margin-top:
+      2rem; font-size: 0.8rem; color: #999; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Olá, {{nome}}!</h2>
+
+      <p>{{mensagem}}</p>
+
+      {{#if link}}
+        <p><a href="{{link}}">Clique aqui para mais informações</a></p>
+      {{/if}}
+
+      <div class="footer">
+        <p>Este é um e-mail automático. Não responda.</p>
+      </div>
+    </div>
+  </body>
+</html>
