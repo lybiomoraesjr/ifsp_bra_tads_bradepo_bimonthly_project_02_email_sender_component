@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+.env
+
+# TypeScript
+dist/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+
+# Jest
+coverage/
+jest-cache/
+jest-config.js
+
+# Editor/IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Temporary templates
+*.tmp
+*.swp
+
+# System
+Thumbs.db
