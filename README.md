@@ -10,7 +10,9 @@ Projeto desenvolvido para a disciplina de **Desenvolvimento de Componentes (BRAD
 
 ## 1. Descrição do Componente
 
-Este projeto consiste em um componente de software para envio de emails, desenvolvido em TypeScript. Ele abstrai a complexidade do envio de emails transacionais, oferecendo uma interface simples e robusta para configurar um servidor SMTP e enviar mensagens com suporte a templates dinâmicos (Handlebars) e anexos.
+Este projeto consiste em um componente de software para envio de emails, desenvolvido em TypeScript. Ele abstrai a complexidade do envio de emails transacionais, oferecendo uma interface simples e robusta para configurar um servidor SMTP e enviar mensagens.
+
+Seu principal recurso é o suporte a templates dinâmicos com **Handlebars**, permitindo que qualquer variável seja injetada no corpo do email para personalização completa, além do suporte a múltiplos anexos.
 
 O componente foi projetado seguindo o **Padrão de Interface de Componente** e os princípios **SOLID**, garantindo baixo acoplamento, alta coesão e reutilização.
 
@@ -20,7 +22,7 @@ A seguir, é detalhado como o desenvolvimento deste componente atendeu aos crit�
 
 ### CR3: Implementação do Padrão de Interface de Componente (1,5 pontos)
 
-O Padrão de Interface de Componente foi a principal diretriz arquitetural do projeto. Para facilitar a implementação e garantir a conformidade com a metodologia **Beyond**, utilizei o pacote [`@lybioit/component-interface-pattern`](https://www.npmjs.com/package/@lybioit/component-interface-pattern), que fornece as abstrações necessárias (`InterfacePort`, `RequiredInterface`, `ProvidedInterface`).
+O Padrão de Interface de Componente foi a principal diretriz arquitetural do projeto. Para facilitar a implementação e garantir a conformidade com a metodologia **Beyond**, utilizei o pacote [`@lybioit/component-interface-pattern`](https://www.npmjs.com/package/@lybioit/component-interface-pattern), que fornece as abstrações necessárias (`InterfacePort`).
 
 - **`provided/ConcreteInterfacePort.ts`**: Implementa a porta de interface, expondo as funcionalidades públicas do componente (`configureSMTP` e `send`).
 - **`provided/interfaces/SpecificProvidedInterface.ts`**: Define o contrato público (interface provida) que os clientes do componente utilizarão.
@@ -36,7 +38,7 @@ Pelo menos três princípios SOLID foram aplicados na arquitetura interna do com
     -   `EmailDataModel`: Modela e valida os dados de um email (destinatário, assunto, etc.).
     -   `EmailAttachmentModel`: Modela e valida os anexos.
 
-2.  **Princípio do Aberto/Fechado (OCP)**: O componente é aberto para extensão, mas fechado para modificação. É possível, por exemplo, criar novos templates de email ou adicionar diferentes tipos de anexo sem alterar o código do `EmailService`. O uso de um objeto `data` genérico (`Record<string, unknown>`) para os templates permite a inserção de qualquer dado dinâmico sem a necessidade de modificar as interfaces existentes.
+2.  **Princípio do Aberto/Fechado (OCP)**: O componente é aberto para extensão, mas fechado para modificação. O uso de um objeto `data` genérico (`Record<string, unknown>`) para os templates permite a inserção de qualquer dado dinâmico sem a necessidade de modificar as interfaces do componente, apenas o template.
 
 3.  **Princípio da Inversão de Dependência (DIP)**: O componente depende de abstrações, não de implementações concretas. O `EmailService` depende das interfaces (`SMTPConfig`, `EmailData`) em vez de classes concretas, e o cliente do componente depende da `SpecificProvidedInterface`, não da implementação interna do serviço.
 
@@ -84,8 +86,9 @@ const smtpConfig: SMTPConfig = {
 const emailData: EmailData = {
   to: 'destinatario@example.com',
   subject: 'Assunto do Email',
-  html: '<b>Olá!</b>', // Conteúdo base, pode ser sobrescrito por um template
-  data: { // Dados para o template
+  html: '<b>Olá!</b>', // Conteúdo base, ignorado se um template for usado.
+  // O objeto 'data' contém as variáveis que serão injetadas no seu template Handlebars.
+  data: { 
     nome: 'John Doe',
     mensagem: 'Esta é uma mensagem de teste.',
     link: 'https://example.com'
@@ -104,7 +107,9 @@ async function enviar() {
   service.configureSMTP(smtpConfig);
   
   try {
-    await service.sendEmail(emailData);
+    // Para usar um template, passe o caminho do arquivo .hbs como segundo argumento.
+    // O conteúdo HTML do email será gerado a partir do template.
+    await service.sendEmail(emailData, 'caminho/para/seu/template.hbs');
     console.log('Email enviado com sucesso!');
   } catch (error) {
     console.error('Falha ao enviar email:', error);
@@ -112,6 +117,23 @@ async function enviar() {
 }
 
 enviar();
+```
+
+### Exemplo de Template (`seu-template.hbs`)
+
+Para que as variáveis do objeto `data` sejam injetadas, seu template Handlebars (`.hbs`) deve usar as chaves correspondentes. O conteúdo do seu arquivo de template poderia ser assim:
+
+```html
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Olá, {{nome}}!</h1>
+  <p>{{mensagem}}</p>
+  <p>
+    Para mais informações, <a href="{{link}}">clique aqui</a>.
+  </p>
+</body>
+</html>
 ```
 
 ## 4. Licença
