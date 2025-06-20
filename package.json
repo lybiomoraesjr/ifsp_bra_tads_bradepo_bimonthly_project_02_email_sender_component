@@ -1,6 +1,6 @@
 {
   "name": "@lybioit/email-sender-component",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A TypeScript email sender component using Component Interface Pattern",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
