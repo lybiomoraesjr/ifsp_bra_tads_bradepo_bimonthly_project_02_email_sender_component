@@ -4,18 +4,21 @@ import path from 'path';
 import fs from 'fs';
 import nodemailer from 'nodemailer';
 
+// Criamos uma função de mock persistente para sendMail.
+const mockSendMail = jest.fn().mockImplementation((mailOptions) => {
+  // Simula um erro se o email for para 'error@example.com'
+  if (mailOptions.to === 'error@example.com') {
+    return Promise.reject(new Error('Failed to send email'));
+  }
+  return Promise.resolve({ messageId: 'test-message-id' });
+});
+
 // Mock global do nodemailer para evitar chamadas de rede reais durante os testes.
 jest.mock('nodemailer', () => ({
+  // Fazemos com que createTransport sempre retorne o mesmo objeto mock.
   createTransport: jest.fn(() => ({
-    // Mock da função sendMail para simular sucessos e falhas controladas.
-    sendMail: jest.fn().mockImplementation((mailOptions) => {
-      // Simula um erro se o email for para 'error@example.com'
-      if (mailOptions.to === 'error@example.com') {
-        return Promise.reject(new Error('Failed to send email'));
-      }
-      return Promise.resolve({ messageId: 'test-message-id' });
-    })
-  }))
+    sendMail: mockSendMail,
+  })),
 }));
 
 /**
@@ -123,8 +126,7 @@ describe('EmailService', () => {
 
     it('should send email successfully with default template (base.hbs)', async () => {
       await expect(emailService.sendEmail(mockEmailData)).resolves.not.toThrow();
-      const transport = (nodemailer.createTransport as jest.Mock)();
-      expect(transport.sendMail).toHaveBeenCalledWith(expect.objectContaining({
+      expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
         from: mockSMTPConfig.user,
         to: mockEmailData.to,
         subject: mockEmailData.subject
@@ -137,8 +139,7 @@ describe('EmailService', () => {
         to: 'recipient1@example.com, recipient2@example.com'
       };
       await expect(emailService.sendEmail(multipleRecipients)).resolves.not.toThrow();
-      const transport = (nodemailer.createTransport as jest.Mock)();
-      expect(transport.sendMail).toHaveBeenCalledWith(expect.objectContaining({
+      expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
         to: multipleRecipients.to
       }));
     });
@@ -159,12 +160,11 @@ describe('EmailService', () => {
 
       await emailService.sendEmail(emailWithData, customTemplatePath);
       
-      const transport = (nodemailer.createTransport as jest.Mock)();
-      const sentMail = transport.sendMail.mock.calls[0][0];
+      const sentMailOptions = mockSendMail.mock.calls[0][0];
       
-      expect(sentMail.html).toContain('Olá, John Doe!');
-      expect(sentMail.html).toContain('Test Message');
-      expect(sentMail.html).toContain('https://test.com');
+      expect(sentMailOptions.html).toContain('Olá, John Doe!');
+      expect(sentMailOptions.html).toContain('Test Message');
+      expect(sentMailOptions.html).toContain('https://test.com');
       
       fs.unlinkSync(customTemplatePath);
     });
@@ -216,11 +216,10 @@ describe('EmailService', () => {
 
       await emailService.sendEmail(emailWithAttachments);
       
-      const transport = (nodemailer.createTransport as jest.Mock)();
-      const sentMail = transport.sendMail.mock.calls[0][0];
+      const sentMailOptions = mockSendMail.mock.calls[0][0];
       
-      expect(sentMail.attachments).toHaveLength(1);
-      expect(sentMail.attachments[0]).toEqual(expect.objectContaining({
+      expect(sentMailOptions.attachments).toHaveLength(1);
+      expect(sentMailOptions.attachments[0]).toEqual(expect.objectContaining({
         filename: 'test.pdf',
         content: expect.any(Buffer),
         contentType: 'application/pdf'
@@ -233,6 +232,10 @@ describe('EmailService', () => {
    * @description Testa a gestão de templates padrão.
    */
   describe('template management', () => {
+    beforeEach(() => {
+      emailService.configureSMTP(mockSMTPConfig);
+    });
+
     it('should set and get default template path', () => {
       const customTemplatePath = path.resolve(__dirname, 'custom_template.hbs');
       emailService.setDefaultTemplatePath(customTemplatePath);
