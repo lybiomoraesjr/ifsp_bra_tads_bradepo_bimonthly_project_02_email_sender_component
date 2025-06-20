@@ -16,7 +16,44 @@ Seu principal recurso é o suporte a templates dinâmicos com **Handlebars**, pe
 
 O componente foi projetado seguindo o **Padrão de Interface de Componente** e os princípios **SOLID**, garantindo baixo acoplamento, alta coesão e reutilização.
 
-## 2. Atendimento aos Critérios de Avaliação
+## 2. Arquitetura do Componente
+
+### Padrão de Interface de Componente
+
+O componente utiliza o padrão de Interface de Componente através das seguintes classes:
+
+#### **ConcreteComponentInterface**
+- **Função**: Ponto de entrada principal e container do componente
+- **Responsabilidade**: Gerencia todas as portas de interface disponíveis
+- **Uso**: É a primeira classe que o cliente instancia para acessar o componente
+
+```typescript
+// Cliente cria uma instância do componente
+const emailComponent = new ConcreteComponentInterface();
+
+// Cliente acessa as funcionalidades através das portas
+const emailPort = emailComponent.ports[0];
+```
+
+#### **ConcreteInterfacePort**
+- **Função**: Porta de interface que expõe as funcionalidades do serviço de email
+- **Responsabilidade**: Adapta a interface pública com a lógica interna
+- **Métodos**: `configureSMTP()` e `send()`
+
+```typescript
+// Cliente usa a porta para configurar e enviar emails
+emailPort.configureSMTP(smtpConfig);
+await emailPort.send(emailData);
+```
+
+### Vantagens desta Arquitetura
+
+1. **Encapsulamento**: A lógica interna (`EmailService`) fica oculta do cliente
+2. **Flexibilidade**: Novas funcionalidades podem ser adicionadas através de novas portas
+3. **Testabilidade**: Cada parte pode ser testada independentemente
+4. **Reutilização**: O componente pode ser facilmente integrado em sistemas maiores
+
+## 3. Atendimento aos Critérios de Avaliação
 
 A seguir, é detalhado como o desenvolvimento deste componente atendeu aos critérios de avaliação individuais definidos no plano de ensino.
 
@@ -54,16 +91,16 @@ Pelo menos três princípios SOLID foram aplicados na arquitetura interna do com
 
 O componente possui uma suíte de testes unitários robusta para validar seu funcionamento.
 -   **Ferramenta de Teste**: **Jest** foi utilizado para a criação e execução dos testes.
--   **Cobertura**: Foram criados testes para todos os elementos internos:
-    -   `EmailService.test.ts`: Testa a lógica de envio, tratamento de templates, anexos e erros.
-    -   `SMTPConfig.test.ts`: Valida a criação e as regras do modelo de configuração.
-    -   `EmailData.test.ts`: Valida a criação e as regras do modelo de dados do email.
-    -   `EmailAttachment.test.ts`: Valida a criação e as regras do modelo de anexos.
+-   **Cobertura**: Foram criados testes para todos os elementos do componente:
+    -   `tests/provided/ComponentInterface.test.ts`: Testa o padrão de Interface de Componente, validando o uso correto do `ConcreteComponentInterface` e `ConcreteInterfacePort`.
+    -   `tests/internal/models/SMTPConfig.test.ts`: Valida a criação e as regras do modelo de configuração.
+    -   `tests/internal/models/EmailData.test.ts`: Valida a criação e as regras do modelo de dados do email.
+    -   `tests/internal/models/EmailAttachment.test.ts`: Valida a criação e as regras do modelo de anexos.
 -   **Execução**: Os testes podem ser executados com o comando `npm test`.
 
 ---
 
-## 3. Como Usar o Componente
+## 4. Como Usar o Componente
 
 ### Instalação
 ```bash
@@ -72,9 +109,19 @@ npm install @lybioit/email-sender-component
 
 ### Exemplo de Uso
 ```typescript
-import { EmailService, SMTPConfig, EmailData } from '@lybioit/email-sender-component';
+import { 
+  ConcreteComponentInterface, 
+  SMTPConfig, 
+  EmailData 
+} from '@lybioit/email-sender-component';
 
-// 1. Configure o SMTP
+// 1. Crie uma instância do componente
+const emailComponent = new ConcreteComponentInterface();
+
+// 2. Obtenha a porta de interface (primeira porta disponível)
+const emailPort = emailComponent.ports[0];
+
+// 3. Configure o SMTP
 const smtpConfig: SMTPConfig = {
   host: 'smtp.example.com',
   port: 587,
@@ -82,7 +129,9 @@ const smtpConfig: SMTPConfig = {
   pass: 'sua-senha'
 };
 
-// 2. Crie os dados do email
+emailPort.configureSMTP(smtpConfig);
+
+// 4. Crie os dados do email
 const emailData: EmailData = {
   to: 'destinatario@example.com',
   subject: 'Assunto do Email',
@@ -101,15 +150,12 @@ const emailData: EmailData = {
   ]
 };
 
-// 3. Envie o email
+// 5. Envie o email
 async function enviar() {
-  const service = new EmailService();
-  service.configureSMTP(smtpConfig);
-  
   try {
     // Para usar um template, passe o caminho do arquivo .hbs como segundo argumento.
     // O conteúdo HTML do email será gerado a partir do template.
-    await service.sendEmail(emailData, 'caminho/para/seu/template.hbs');
+    await emailPort.send(emailData);
     console.log('Email enviado com sucesso!');
   } catch (error) {
     console.error('Falha ao enviar email:', error);
@@ -117,6 +163,15 @@ async function enviar() {
 }
 
 enviar();
+```
+
+### Uso Alternativo (Obtendo Porta por ID)
+```typescript
+// Se você souber o ID específico da porta
+const emailPort = emailComponent.getPort('emailService');
+
+// Ou verificar todas as portas disponíveis
+console.log('Portas disponíveis:', emailComponent.ports.map(p => p.id));
 ```
 
 ### Exemplo de Template (`seu-template.hbs`)
@@ -136,6 +191,6 @@ Para que as variáveis do objeto `data` sejam injetadas, seu template Handlebars
 </html>
 ```
 
-## 4. Licença
+## 5. Licença
 
 Este projeto está licenciado sob a licença **MIT**. Veja o arquivo [LICENSE](./LICENSE) para mais detalhes. 

@@ -3,18 +3,19 @@
  * @description Script de teste manual para o componente de envio de email.
  *
  * Este arquivo serve como um exemplo prático e um ponto de entrada para testar
- * o `EmailService` manualmente. Ele carrega as configurações de um arquivo .env,
- * monta um objeto de email com dados de teste (incluindo um anexo),
- * e utiliza o componente para enviar o email.
+ * o componente de email usando o padrão de Interface de Componente.
+ * Ele carrega as configurações de um arquivo .env, monta um objeto de email 
+ * com dados de teste (incluindo um anexo), e utiliza o componente para enviar o email.
  *
  * Para executar, use o comando: `npm run email:test`
  */
 
 import dotenv from "dotenv";
-import { EmailService } from "./internal/EmailService";
+import { ConcreteComponentInterface } from "./provided/ConcreteComponentInterface";
 import { SMTPConfig, EmailData } from "./internal/models";
 import path from "path";
 import fs from "fs";
+import { ConcreteInterfacePort } from "./provided/ConcreteInterfacePort";
 
 // Carrega as variáveis de ambiente do arquivo .env na raiz do projeto.
 dotenv.config();
@@ -22,7 +23,7 @@ dotenv.config();
 /**
  * @async
  * @function main
- * @description Função principal que orquestra o teste de envio de email.
+ * @description Função principal que orquestra o teste de envio de email usando o padrão de Interface de Componente.
  */
 async function main() {
   // 1. Validação das Variáveis de Ambiente
@@ -81,7 +82,7 @@ async function main() {
   };
 
   // Log das configurações para fins de depuração.
-  console.log("📧 Configurando serviço de email...");
+  console.log("📧 Configurando componente de email...");
   console.log(`   Host: ${smtpConfig.host}:${smtpConfig.port}`);
   console.log(`   Usuário: ${smtpConfig.user}`);
   console.log(`   Destinatário: ${emailData.to}`);
@@ -92,15 +93,18 @@ async function main() {
     console.log("⚠️  Arquivo de anexo não encontrado:", attachmentPath);
   }
 
-  // 5. Envio do Email
-  // Instancia, configura e utiliza o EmailService para enviar o email.
-  const service = new EmailService();
-  service.configureSMTP(smtpConfig);
+  // 5. Uso do Componente via Padrão de Interface de Componente
+  // Cria uma instância do componente e obtém a porta de interface.
+  const emailComponent = new ConcreteComponentInterface();
+  const emailPort = emailComponent.getPort("emailService") as ConcreteInterfacePort;
+
+  // Configura o SMTP através da porta de interface
+  emailPort.configureSMTP(smtpConfig);
 
   try {
-    console.log("🚀 Enviando email...");
-    await service.sendEmail(emailData);
-    console.log("✅ Email enviado com sucesso!");
+    console.log("🚀 Enviando email através do componente...");
+    await emailPort.send(emailData);
+    console.log("✅ Email enviado com sucesso usando o padrão de Interface de Componente!");
   } catch (err) {
     console.error("❌ Erro ao enviar email:", err);
     process.exit(1);
